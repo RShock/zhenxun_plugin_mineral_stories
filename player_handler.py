@@ -25,7 +25,4 @@ async def get_player(event) -> PlayerDB:
     return player
 
 
-async def buy_item_handle(event, itemname, itemcnt) -> str:
-    return ""
-
 

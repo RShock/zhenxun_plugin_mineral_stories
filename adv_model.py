@@ -31,7 +31,7 @@ class ActionDB(db.Model):
         try:
             async with db.transaction():
                 logger.info(f"{uid}出发了")
-                return await cls.create(uid=uid, position=pos, action="探险", log=f"出发了！目标{pos}\n")
+                return await cls.create(uid=uid, position=pos, action=f"探险中({pos})", log=f"出发了！目标{pos}\n")
         except Exception as e:
             logger.info(f"角色出发出错 {type(e)}: {e}")
 

@@ -1,10 +1,13 @@
 {
   "森林": {
     "require_level": 1,
-    "owned": {},
-    "mineral_list": {
-      "原木": 1.0
-    },
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "原木",
+        "weight": 1
+      }
+    ],
     "public": true,
     "require_honor": {},
     "require_buff": {},
@@ -13,9 +16,12 @@
   },
   "新手矿洞": {
     "require_level": 1,
-    "owned": {
-      "新手矿洞(第一层)": 1.0
-    },
+    "owned": [
+      {
+        "name": "新手矿洞(第一层)",
+        "weight": 1
+      }
+    ],
     "public": true,
     "require_honor": {},
     "require_buff": {},
@@ -24,14 +30,30 @@
   },
   "新手矿洞(第一层)": {
     "require_level": 1,
-    "owned": {
-      "新手矿洞(第二层)": 0.5
-    },
-    "mineral_list": {
-      "辉锑锡铅矿": 0.50,
-      "圆柱锡矿": 0.49,
-      "未知碎片I": 0.01
-    },
+    "owned": [
+      {
+        "name": "新手矿洞(第一层)",
+        "weight": 500
+      },
+      {
+        "name": "新手矿洞(第二层)",
+        "weight": 300
+      }
+    ],
+    "mineral_list": [
+      {
+        "name": "辉锑锡铅矿",
+        "weight": 0.50
+      },
+      {
+        "name": "圆柱锡矿",
+        "weight": 0.49
+      },
+      {
+        "name": "未知碎片I",
+        "weight": 0.01
+      }
+    ],
     "cost": {
       "火把": 1
     },
@@ -43,15 +65,38 @@
   },
   "新手矿洞(第二层)": {
     "require_level": 2,
-    "owned": {
-      "新手矿洞(第三层)": 0.5
-    },
-    "mineral_list": {
-      "黄锡矿": 0.49,
-      "硫锡铅矿": 0.49,
-      "工作手套": 0.01,
-      "未知碎片II": 0.01
-    },
+    "owned": [
+      {
+        "name": "新手矿洞(第二层)",
+        "weight": 500
+      },
+      {
+        "name": "新手矿洞(第三层)",
+        "weight": 500
+      },
+      {
+        "name": "秘密地层α",
+        "weight": 1
+      }
+    ],
+    "mineral_list": [
+      {
+        "name": "黄锡矿",
+        "weight": 0.49
+      },
+      {
+        "name": "硫锡铅矿",
+        "weight": 0.49
+      },
+      {
+        "name": "未知碎片II",
+        "weight": 0.01
+      },
+      {
+        "name": "工作手套",
+        "weight": 0.01
+      }
+    ],
     "cost": {
       "火把": 1
     },
@@ -63,14 +108,26 @@
   },
   "新手矿洞(第三层)": {
     "require_level": 3,
-    "owned": {
-      "新手矿洞(第四层)": 1.0
-    },
-    "mineral_list": {
-      "锡石": 0.50,
-      "黄锡矿": 0.49,
-      "未知碎片III": 0.01
-    },
+    "owned": [
+      {
+        "name": "新手矿洞(第四层)",
+        "weight": 1.0
+      }
+    ],
+    "mineral_list": [
+      {
+        "name": "锡石",
+        "weight": 0.5
+      },
+      {
+        "name": "黄锡矿",
+        "weight": 0.49
+      },
+      {
+        "name": "未知碎片III",
+        "weight": 0.01
+      }
+    ],
     "cost": {
       "火把": 1
     },
@@ -84,5 +141,27 @@
     "require_level": 999,
     "public": false,
     "description": "矿洞的第四层，这里分布着很多铜矿"
+  },
+  "秘密地层α": {
+    "require_level": 1,
+    "mineral_list": [
+      {
+        "name": "未知碎片I",
+        "weight": 1
+      },
+      {
+        "name": "未知碎片II",
+        "weight": 1
+      },
+      {
+        "name": "未知碎片III",
+        "weight": 1
+      }
+    ],
+    "public": false,
+    "cost": {
+      "火把": 1
+    },
+    "description": "听说只有迷路的人才能来到这里..."
   }
 }

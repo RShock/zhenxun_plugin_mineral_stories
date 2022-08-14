@@ -11,7 +11,7 @@ from .adv_model import ActionDB
 from .game_handler import Map, get_world_data, WorldInfo
 from .player_model import PlayerDB
 from .stream import Stream
-from .utils import get_uid
+from .utils import add_item, get_uid
 
 
 async def get_user_can_go(player: PlayerDB):
@@ -37,7 +37,7 @@ async def go_outside(event: GroupMessageEvent, pos: str) -> None:
 async def get_player_status(event: GroupMessageEvent) -> str:
     action = await ActionDB.get_action_by_uid(get_uid(event))
     if action is not None:
-        return f"探险中({action.position})"
+        return f"{action.action}"
     return "休息中"
 
 
@@ -56,7 +56,7 @@ def cal_time(start_time, end_time=None) -> int:
 
 
 def check_access(i, player):
-    tmp_map: Map = get_world_data().get_map(i)
+    tmp_map: Map = get_world_data().get_map(i["name"])
     # bag = json.load(player.bag)
     if tmp_map.require_level > player.lv:
         return False
@@ -64,30 +64,30 @@ def check_access(i, player):
 
 
 def get_random_pos(gmap: Map, player: PlayerDB):
-    tmp = Stream(gmap.owned.items()).filter(lambda i: check_access(i[0], player)).to_list()
+    tmp = Stream(gmap.owned).filter(lambda i: check_access(i, player)).to_list()
     if len(tmp) == 0:
         return gmap
-    total = Stream(tmp).map(lambda t: t[1]).sum()
+    total = Stream(tmp).map(lambda t: t["weight"]).sum()
     ran = random.uniform(0, total)
     t: float = 0
-    for k, v in tmp:
-        t += v
+    for m in tmp:
+        t += m["weight"]
         if t >= ran:
-            return get_world_data().get_map(k)
+            return get_world_data().get_map(m["name"])
     return gmap
 
 
 def get_random_item(gmap: Map):
     if len(gmap.mineral_list) == 0:
         return None
-    tmp = gmap.mineral_list.values()
-    total = Stream(tmp).sum()
+    tmp = gmap.mineral_list
+    total = Stream(tmp).map(lambda t: t["weight"]).sum()
     ran = random.uniform(0, total)
     t: float = 0
-    for k, v in gmap.mineral_list.items():
-        t += v
+    for i in gmap.mineral_list:
+        t += i["weight"]
         if t >= ran:
-            return get_world_data().get_item(k)
+            return get_world_data().get_item(i["name"])
     return None
 
 
@@ -105,23 +105,10 @@ def cost_bag(cost, bag):
         bag[k] -= v
 
 
-def add_item(dic, name):
-    if dic.get(name) is None:
-        dic[name] = 1
-    else:
-        dic[name] += 1
-
-
-def sum_dict(a, b) -> dict[str, int]:
-    temp = dict()
-    for key in a.keys() | b.keys():
-        temp[key] = sum([d.get(key, 0) for d in (a, b)])
-    return temp
-
-
 async def cal_go_home(player: PlayerDB, adv: ActionDB):
     # 结算回家
-    await player.update(bag=sum_dict(player.bag, adv.item_get)).apply()
+    player.add_items(adv.item_get)
+    await player.update(bag=player.bag).apply()
     await adv.delete()
 
 
@@ -136,9 +123,9 @@ async def go_home_handle(event: GroupMessageEvent, force_go_home: bool = False) 
     if not act:
         return "你还没有出发呢！输入'出发'来出发吧", True
     player: PlayerDB = await PlayerDB.get_player_by_uid(uid)
-    already_move = cal_time(act.start_time,act.update_time )
+    already_move = min(10, cal_time(act.start_time, act.update_time))
     total_move = min(10, cal_time(act.start_time))
-    times = total_move-already_move
+    times = total_move - already_move
 
     should_go_home = True if total_move >= 10 else False
     log = act.log or ""
@@ -150,7 +137,7 @@ async def go_home_handle(event: GroupMessageEvent, force_go_home: bool = False) 
     for i in range(20):
         if i >= times:
             if should_go_home:
-                log += "（已经达到单次冒险极限）你觉得自己又累又渴，只能回来了！\n"
+                log += f"（已经达到单次冒险极限）你觉得自己又累又渴，只能回来了！debug:{already_move} {total_move} {times}\n"
                 break
             flg = True
             break
@@ -166,18 +153,18 @@ async def go_home_handle(event: GroupMessageEvent, force_go_home: bool = False) 
         cost_bag(pos.cost, player.bag)  # 消耗的物品在探险时就已经消耗
         # 检查收获
         item = get_random_item(pos)
-        add_item(act.item_get, item.name)  # 添加的物品是放在暂存区的，需要结束探险时才能回来
+        add_item(act.item_get, item.name, 1)  # 添加的物品是放在暂存区的，需要结束探险时才能回来
         log += f"获得了{item.simple_name()}...\n"
         exp += item.lv
-        add_item(player.collection, item.name)
     # 计算完毕 增加获得的对应物品 记一下日志
     await act.update(item_get=act.item_get, log=log, position=pos.name, update_time=datetime.now()).apply()
     # 再去掉背包里的相关物品 更新exp和图鉴
-    await player.update(bag=player.bag, dig_exp=player.dig_exp + exp, collection=player.collection).apply()
+    await player.update(bag=player.bag, dig_exp=player.dig_exp + exp).apply()
     if force_go_home or not flg:
         # 结算回家逻辑
         log += "你回家了！"
-        await cal_go_home(player, act)
+        await cal_go_home(player, act) # todo 强行回家不加东西?
+        return log, True
     if flg:
         return log + "你还在继续探险，要强行回家的话请输入(强行回家)", False
     return log, flg

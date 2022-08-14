@@ -1,3 +1,4 @@
+from extensive_plugin.mineral_stories.stream import Stream
 from services.db_context import db
 from datetime import datetime
 from services.log import logger
@@ -24,7 +25,7 @@ class PlayerDB(db.Model):
     # 装备
     equip = db.Column(db.JSON(), nullable=False, default={})
     # 背包
-    bag = db.Column(db.JSON(), nullable=False, default={})
+    bag: dict[str, int] = db.Column(db.JSON(), nullable=False, default={})
     # buff
     buff = db.Column(db.JSON(), nullable=False, default={})
     # 箱子
@@ -87,11 +88,26 @@ class PlayerDB(db.Model):
                 await s.update(status=status).apply()
         except Exception as e:
             logger.info(f"设置角色状态出错 {type(e)}: {e}")
+
+    # 注意 add完仍然需要update哦
+    def add_item(self, name, cnt):
+        from extensive_plugin.mineral_stories.utils import add_item
+        add_item(self.bag, name, cnt)
+        add_item(self.collection, name, cnt)
+
+    def add_items(self, items):
+        from extensive_plugin.mineral_stories.utils import add_items
+        self.bag = add_items(self.bag, items)
+        self.collection = add_items(self.collection, items)
+
+    def showbag(self) -> str:
+        return Stream(self.bag.items()).map(lambda i: f"{i[0]} x{i[1]}\n").reduce(lambda s1, s2: s1 + s2, '')
+
     #
-    # @classmethod
-    # async def update_bag(cls, uid: str, bag) -> None:
-    #     try:
-    #         async with db.transaction():
-    #
-    #     except Exception as e:
-    #         logger.info(f"添加单个物品出错 {type(e)}: {e}")
+    def cost_item(self, item_name):
+        if self.bag.get(item_name):
+            self.bag[item_name] -= 1
+            return True
+        else:
+            logger.warning(f"使用{item_name}时发现物品不足")
+            return False
