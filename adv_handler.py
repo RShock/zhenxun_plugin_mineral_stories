@@ -87,7 +87,7 @@ def get_random_item(gmap: Map):
     for i in gmap.mineral_list:
         t += i["weight"]
         if t >= ran:
-            return get_world_data().get_item(i["name"])
+            return get_world_data().get_item(i["name"]), i.get("num") or 1
     return None
 
 
@@ -108,12 +108,12 @@ def cost_bag(cost, bag):
 async def cal_go_home(player: PlayerDB, adv: ActionDB):
     # 结算回家
     player.add_items(adv.item_get)
-    await player.update(bag=player.bag).apply()
+    await player.update(bag=player.bag, collection=player.collection).apply()
     await adv.delete()
 
 
 # bool: True 已经回家了
-async def go_home_handle(event: GroupMessageEvent, force_go_home: bool = False) -> [str, bool]:
+async def adv_time_pass(event: GroupMessageEvent, force_go_home: bool = False) -> [str, bool]:
     uid = get_uid(event)
     # 第一步是计算角色行动了几次
     # 首先根据updateTime-createTime计算已经计算了几次行动
@@ -137,7 +137,7 @@ async def go_home_handle(event: GroupMessageEvent, force_go_home: bool = False) 
     for i in range(20):
         if i >= times:
             if should_go_home:
-                log += f"（已经达到单次冒险极限）你觉得自己又累又渴，只能回来了！debug:{already_move} {total_move} {times}\n"
+                log += f"你觉得自己又累又渴，只能回来了！debug:{already_move} {total_move} {times}\n"
                 break
             flg = True
             break
@@ -148,12 +148,12 @@ async def go_home_handle(event: GroupMessageEvent, force_go_home: bool = False) 
             log += f"来到了{pos.name}...\n"
         # 检查消耗
         if not check_bag(pos.cost, player.bag):
-            log += f"没有以下物品：{pos.cost}，没法坚持下去了，只能回家了\n"
+            log += f"没有以下物品：{pos.cost}，没法坚持下去了\n"
             break
         cost_bag(pos.cost, player.bag)  # 消耗的物品在探险时就已经消耗
         # 检查收获
-        item = get_random_item(pos)
-        add_item(act.item_get, item.name, 1)  # 添加的物品是放在暂存区的，需要结束探险时才能回来
+        item, num = get_random_item(pos)
+        add_item(act.item_get, item.name, num)  # 添加的物品是放在暂存区的，需要结束探险时才能回来
         log += f"获得了{item.simple_name()}...\n"
         exp += item.lv
     # 计算完毕 增加获得的对应物品 记一下日志
@@ -163,7 +163,7 @@ async def go_home_handle(event: GroupMessageEvent, force_go_home: bool = False) 
     if force_go_home or not flg:
         # 结算回家逻辑
         log += "你回家了！"
-        await cal_go_home(player, act) # todo 强行回家不加东西?
+        await cal_go_home(player, act)
         return log, True
     if flg:
         return log + "你还在继续探险，要强行回家的话请输入(强行回家)", False

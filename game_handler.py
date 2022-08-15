@@ -30,6 +30,7 @@ class Item:
     cost = None  # 如果填写cost 就会被商店出售
     lv = 0
     usable = False
+    equip_type = None
 
     def simple_name(self):
         return f"{self.name}(Lv.{self.lv})"
@@ -41,7 +42,6 @@ class Compose:
     type = '熔炼'
     consume = []
     produce = []
-    time_cost = 1
 
 
 class WorldInfo:
@@ -58,10 +58,10 @@ class WorldInfo:
     def get_shop_item(self):  # 如果填写cost 就会被商店出售
         return Stream(self.itemList.items()).map(lambda i: i[1]).filter(lambda i: i.cost).to_list()
 
-    def get_forge_list(self):
+    def get_forge_list(self) -> list[Compose]:
         return self.forgeList
 
-    def get_forge(self, name:str):
+    def get_forge(self, name: str):
         return Stream(self.forgeList).filter(lambda f: f.name == name).find_first()
 
 
@@ -91,6 +91,15 @@ async def load_world_data() -> None:
                 world_data.forgeList = parse_compose(json.load(f))
                 logger.info(f'制作表载入完成，共{len(world_data.forgeList)}个配方')
 
+    # 稍微有点废资源 问题不大
+    for j in world_data.forgeList:
+        for i in j.consume:
+            if get_world_data().get_item(i["name"]) is None:
+                logger.warning(f"制作表内出现未知道具:{i['name']}")
+        for i in j.produce:
+            if get_world_data().get_item(i["name"]) is None:
+                logger.warning(f"制作表内出现未知道具:{i['name']}")
+
 
 def parse_map(map_json):
     map_list = {}
@@ -98,8 +107,8 @@ def parse_map(map_json):
         mp = Map()
         mp.name = key
         mp.require_level = value["require_level"]
-        mp.owned = value.get("owned") or {}  # 可为空 下同
-        mp.mineral_list = value.get("mineral_list") or {}
+        mp.owned = value.get("owned") or []  # 可为空 下同
+        mp.mineral_list = value.get("mineral_list") or []
         mp.public = value["public"]
         mp.require_honor = value.get("require_honor") or {}
         mp.require_buff = value.get("require_buff") or {}
@@ -108,7 +117,7 @@ def parse_map(map_json):
         mp.cost = value.get("cost") or {}
         map_list[key] = mp
 
-        if not isinstance(mp.owned, dict):
+        if not isinstance(mp.owned, list):
             logger.warning(f"地图类型疑似错误：{mp.owned}")
         if not isinstance(mp.mineral_list, list):
             logger.warning(f"地图类型疑似错误：{mp.mineral_list}")
@@ -124,6 +133,7 @@ def parse_item(item_json):
         item.lv = value["lv"]
         item.usable = value.get("usable")
         item.cost = value.get("cost")
+        item.equip_type = value.get('equip_type')
         item_list[key] = item
 
     return item_list
@@ -136,7 +146,6 @@ def parse_compose(compose_json):
         comp.name = v["name"]
         comp.lv = v["lv"]
         comp.type = v.get("type") or "熔炼"
-        comp.time_cost = v["time_cost"]
         comp.consume = v["consume"]
         comp.produce = v["produce"]
         compose_list.append(comp)

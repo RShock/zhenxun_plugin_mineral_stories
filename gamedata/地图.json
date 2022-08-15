@@ -1,4 +1,91 @@
 {
+  "打工": {
+    "require_level": 1,
+    "owned": [
+      {
+        "name": "垃圾回收站",
+        "weight": 500
+      },
+      {
+        "name": "小餐馆",
+        "weight": 500
+      },
+      {
+        "name": "劈柴墩",
+        "weight": 500
+      },
+      {
+        "name": "养老院",
+        "weight": 200
+      }
+    ],
+    "public": true,
+    "description": "每个探险家在业余时间都要帮助镇子里的人"
+  },
+  "小餐馆": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "处理村民们的垃圾"
+  },
+  "垃圾回收站": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "处理村民们的垃圾"
+  },
+  "劈柴墩": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "处理村民们的垃圾"
+  },
+  "养老院": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "处理村民们的垃圾"
+  },
   "森林": {
     "require_level": 1,
     "owned": [],

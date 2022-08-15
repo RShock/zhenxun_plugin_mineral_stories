@@ -11,11 +11,12 @@ import nonebot
 from nonebot import Driver
 
 from utils.message_builder import image
-from .forge_handler import get_forge_list, handle_forge
+from .equip_handler import get_equip_list, handle_equip
+from .forge_handler import get_forge_list, handle_forge, get_forge_num
 from .look_handler import handle_look, show_info
-from .player_handler import register_new_player, get_player
-from .adv_handler import get_user_status, go_home_handle
-from .game_handler import load_world_data, WorldInfo
+from .player_handler import register_new_player, get_player, get_user_status_str
+from .adv_handler import get_user_status, adv_time_pass
+from .game_handler import load_world_data, WorldInfo, Compose
 
 __zx_plugin_name__ = "矿石物语"
 __plugin_usage__ = """
@@ -48,12 +49,13 @@ from .use_handler import get_usable_item, use_item_handler
 register = on_command("加入矿石物语", aliases={"注册矿石物语"}, priority=5, block=True)
 set_out = on_command("出发", priority=5, block=True)
 my_status = on_command("我的状态", priority=5, block=True)
-go_home = on_command("回家", aliases={"归来"}, priority=5, block=True)
+go_home = on_command("回家", aliases={"归来", "探险状态"}, priority=5, block=True)
 force_go_home = on_command("强行回家", aliases={"强制回家"}, priority=5, block=True)
-game_store = on_command("矿石商店", aliases={"矿石物语商店"}, priority=5, block=True)
+game_store = on_command("矿石商店", aliases={"矿石物语商店", "劳动商店"}, priority=5, block=True)
 use_item = on_command("使用", priority=5, block=False)
 forge = on_command("制作", priority=5, block=True)
 look_item = on_command("查看物品", aliases={"查询物品"}, priority=5, block=True)
+equip_item = on_command("装备", priority=5, block=True)
 test = on_command("测试", priority=5, block=True)
 
 driver: Driver = nonebot.get_driver()
@@ -127,11 +129,7 @@ async def _(event: GroupMessageEvent):
     player = await get_player(event)
     if not player:
         await set_out.finish("你还没有账号，请先输入'加入矿石物语'创建账号！")
-    player, status, pos_list = await get_user_status(event)
-    await my_status.finish(f"{player.name} lv{player.lv} {player.sex} {status}\n"
-                           f"持有金币量{player.gold}\n"
-                           f"背包：\n"
-                           f"{player.showbag()}")
+    await my_status.finish(await get_user_status_str(event))
 
 
 def user_status_to_str(player: PlayerDB, pos_list: list[str]):
@@ -149,7 +147,7 @@ async def _(event: GroupMessageEvent, state: T_State):
     player = await get_player(event)
     if not player:
         await set_out.finish("你还没有账号，请先输入'加入矿石物语'创建账号！")
-    log, flg = await go_home_handle(event)
+    log, flg = await adv_time_pass(event)
     state["player_name"] = player.name
     if flg:
         await go_home.send(log)
@@ -159,7 +157,7 @@ async def _(event: GroupMessageEvent, state: T_State):
 
 @force_go_home.handle()
 async def _(event: GroupMessageEvent):
-    log, flg = await go_home_handle(event, force_go_home=True)
+    log, flg = await adv_time_pass(event, force_go_home=True)
     await force_go_home.finish(log)
 
 
@@ -173,20 +171,24 @@ async def _(event: GroupMessageEvent, state: T_State):
 @game_store.got("choose", "需要买什么呢？(输入数字编号)")
 async def _(event: GroupMessageEvent, state: T_State, p: str = ArgStr("choose")):
     if not p.isdigit():
-        await set_out.finish("输入的格式不对，请输入数字")
+        await game_store.finish("输入的格式不对，请输入数字")
     p = int(p)
-    if p >= len(state["tmp"]) or p < 0:
-        await set_out.finish("输入的数字范围不对")
-    state["item"] = state["tmp"][p]
+    if p == 0:
+        await game_store.finish("你离开了商店")
+    if p > len(state["tmp"]) or p < 0:
+        await game_store.finish("输入的数字范围不对")
+    state["item"] = state["tmp"][p - 1]
 
 
 @game_store.got("choose2", f"要买几个呢？(输入数量)")
 async def _(event: GroupMessageEvent, state: T_State, num: str = ArgStr("choose2")):
     if not num.isdigit():
-        await set_out.finish("输入的格式不对，请输入数字")
+        await game_store.finish("输入的格式不对，请输入数字")
     num = int(num)
     if num < 0:
-        await set_out.finish("输入的格式不对，请输入正数")
+        await game_store.finish("输入的格式不对，请输入正数")
+    if num == 0:
+        await game_store.finish("你离开了商店")
 
     await game_store.finish(await buy_item_handle(event, state["item"].name, state["item"].cost, num))
 
@@ -214,17 +216,41 @@ async def _(event: GroupMessageEvent, state: T_State, num: str = ArgStr("choose"
 async def _(event: GroupMessageEvent, state: T_State):
     item, tmp = await get_forge_list(event)
     state["item"] = item
-    await game_store.send(tmp)
+    await forge.send(tmp)
 
 
 @forge.got("choose", "需要制作什么呢？(输入数字编号)")
 async def _(event: GroupMessageEvent, state: T_State, num: str = ArgStr("choose")):
     if not num.isdigit():
-        await set_out.finish("输入的格式不对，请输入数字")
+        await forge.finish("输入的格式不对，请输入数字")
     num = int(num)
+    if num == 0:
+        await forge.finish("好的")
     if num < 0 or num > len(state["item"]):
-        await set_out.finish("输入的数字不在选定范围内")
-    await forge.finish(await handle_forge(event, state["item"][num]))
+        await forge.finish("输入的数字不在选定范围内")
+    can_forge_num = await get_forge_num(event, state["item"][num - 1])
+    if can_forge_num <= 0:
+        await forge.finish("你的素材不够制作")
+    if can_forge_num == 1:
+        await forge.finish(await handle_forge(event, state["item"][num - 1], 1))
+    await forge.send(f"看起来最多可以做{can_forge_num}个")
+    state["tar"] = state["item"][num - 1]
+    state["tarnum"] = can_forge_num
+
+
+@forge.got("choose2", "需要制作几个呢？(输入数字)")
+async def _(event: GroupMessageEvent, state: T_State, num: str = ArgStr("choose2")):
+    if not num.isdigit():
+        await forge.finish("输入的格式不对，请输入数字")
+    num = int(num)
+    can_forge_num: int = state["tarnum"]
+    tar: Compose = state["tar"]
+    if num == 0:
+        await forge.finish("你不做了")
+    if num > can_forge_num:
+        await forge.send(f"没法做那么多！帮你做{can_forge_num}个吧！")
+        num = can_forge_num
+    await forge.finish(await handle_forge(event, tar, num))
 
 
 @look_item.handle()
@@ -252,6 +278,28 @@ async def handle_city(state: T_State, event: GroupMessageEvent, num: str = ArgPl
     if num < 0 or num > len(state["item"]):
         await set_out.finish("输入的数字不在选定范围内")
     await look_item.finish(await show_info(event, state["item"][num]))
+
+
+@equip_item.handle()
+async def _(event: GroupMessageEvent, state: T_State):
+    tmp, tmpstr = await get_equip_list(event)
+    if len(tmp) == 0:
+        await equip_item.finish('你没有可用的装备')
+    await equip_item.send(tmpstr)
+    state['tmp'] = tmp
+
+
+@equip_item.got("choose", prompt="请输入要装备物品的编号")
+async def _(event: GroupMessageEvent, state: T_State, num: str = ArgPlainText("choose")):
+    if not num.isdigit():
+        await equip_item.finish("输入的格式不对，请输入数字")
+    num = int(num)
+    if num == 0:
+        await equip_item.finish("好的")
+    if num < 0 or num > len(state["tmp"]):
+        await equip_item.finish("输入的数字不在选定范围内")
+    await equip_item.finish(await handle_equip(event, state["tmp"][num-1]))
+
 
 
 @test.handle()

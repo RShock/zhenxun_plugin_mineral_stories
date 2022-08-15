@@ -25,7 +25,7 @@ class PlayerDB(db.Model):
     # 装备
     equip = db.Column(db.JSON(), nullable=False, default={})
     # 背包
-    bag: dict[str, int] = db.Column(db.JSON(), nullable=False, default={})
+    bag: dict[str, int] = db.Column(db.JSON(), nullable=False, default={'劳动点数': 100})
     # buff
     buff = db.Column(db.JSON(), nullable=False, default={})
     # 箱子
@@ -34,8 +34,6 @@ class PlayerDB(db.Model):
     collection = db.Column(db.JSON(), nullable=False, default={})
     # 游历地点收集
     arrived = db.Column(db.JSON(), nullable=False, default={})
-    # 当前金币情况
-    gold = db.Column(db.Integer(), default=100)
     # 角色标签
     tag = db.Column(db.JSON(), nullable=False, default={})
     # 角色称号
@@ -101,13 +99,41 @@ class PlayerDB(db.Model):
         self.collection = add_items(self.collection, items)
 
     def showbag(self) -> str:
-        return Stream(self.bag.items()).map(lambda i: f"{i[0]} x{i[1]}\n").reduce(lambda s1, s2: s1 + s2, '')
+        if len(self.bag) != 0:
+            return Stream(self.bag.items()).map(lambda i: f"{i[0]} x{i[1]}\n").reduce(lambda s1, s2: s1 + s2, '')
+        return "没有任何物品"
 
-    #
-    def cost_item(self, item_name):
-        if self.bag.get(item_name):
-            self.bag[item_name] -= 1
+    def show_equip(self) -> str:
+        if len(self.equip) != 0:
+            return Stream(self.equip.items()).map(lambda i: f"{i[0]}: {i[1]}\n").reduce(lambda s1, s2: s1 + s2, '')
+        return "没穿任何装备"
+
+    # 需要在外部检查物品数量是否足够
+    def cost_item(self, item_name, num=1):
+        if self.bag.get(item_name) >= num:
+            self.bag[item_name] -= num
+            if self.bag.get(item_name) == 0:
+                self.bag.pop(item_name)
             return True
         else:
             logger.warning(f"使用{item_name}时发现物品不足")
             return False
+
+    def query_item(self, item_name):
+        return self.bag.get(item_name) or 0
+
+    def get_bag(self) -> dict[str, int]:
+        return self.bag
+
+    def get_equip(self, _type) -> str:
+        return self.equip.get(_type)
+
+    def wear(self, _type, name):
+        self.equip[_type] = name
+        self.cost_item(name)
+
+    def unwear(self, _type, name):
+        from extensive_plugin.mineral_stories.utils import add_item
+        # 这里的添加不会增加图鉴计数，所以不能直接调用playerDB.add_item
+        add_item(self.bag, name, 1)
+        self.equip.pop(_type)

@@ -17,7 +17,7 @@ async def handle_look(event, item_name) -> [str, bool, list[str]]:
     if len(item_list) == 0:
         return "没有找到相关物品，你只能查阅自己曾经解锁过的物品哦"
     if len(item_list) == 1:
-        return await show_info(item_list[0]), True, None
+        return await show_info(event, item_list[0]), True, None
     return convert_items_to_str_list(item_list), False, item_list
 
 
