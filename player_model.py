@@ -42,6 +42,8 @@ class PlayerDB(db.Model):
     create_time = db.Column(db.DateTime(), default=datetime.now)
     # 来自群
     group_id = db.Column(db.BigInteger(), default=0)
+    # 已经完成的任务
+    complete_mission = db.Column(db.JSON(), nullable=False, default={})
     # 缺省字段
     reverse1 = db.Column(db.JSON(), nullable=True, default={})
     reverse2 = db.Column(db.JSON(), nullable=True, default={})
@@ -93,10 +95,11 @@ class PlayerDB(db.Model):
         add_item(self.bag, name, cnt)
         add_item(self.collection, name, cnt)
 
-    def add_items(self, items):
+    def add_items(self, items) -> "PlayerDB":
         from extensive_plugin.mineral_stories.utils import add_items
         self.bag = add_items(self.bag, items)
         self.collection = add_items(self.collection, items)
+        return self
 
     def showbag(self) -> str:
         if len(self.bag) != 0:
@@ -137,3 +140,5 @@ class PlayerDB(db.Model):
         # 这里的添加不会增加图鉴计数，所以不能直接调用playerDB.add_item
         add_item(self.bag, name, 1)
         self.equip.pop(_type)
+
+

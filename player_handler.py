@@ -29,6 +29,6 @@ async def get_user_status_str(event) -> str:
     player, status, pos_list = await get_user_status(event)
     return f"{player.name} lv{player.lv} {player.sex} {status}\n" \
            f"装备：\n" \
-           f"{player.show_equip()}" \
+           f"{player.show_equip()}\n" \
            f"背包：\n" \
            f"{player.showbag()}"

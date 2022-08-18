@@ -14,6 +14,8 @@ from utils.message_builder import image
 from .equip_handler import get_equip_list, handle_equip
 from .forge_handler import get_forge_list, handle_forge, get_forge_num
 from .look_handler import handle_look, show_info
+from .mission_handler import get_available_mission, handle_receive_mission, get_submitable_mission, \
+    handle_submit_mission
 from .player_handler import register_new_player, get_player, get_user_status_str
 from .adv_handler import get_user_status, adv_time_pass
 from .game_handler import load_world_data, WorldInfo, Compose
@@ -56,7 +58,10 @@ use_item = on_command("使用", priority=5, block=False)
 forge = on_command("制作", priority=5, block=True)
 look_item = on_command("查看物品", aliases={"查询物品"}, priority=5, block=True)
 equip_item = on_command("装备", priority=5, block=True)
+receive_mission = on_command("领取任务", priority=5, block=True)
 test = on_command("测试", priority=5, block=True)
+submit_mission = on_command("提交任务", priority=5, block=True)
+
 
 driver: Driver = nonebot.get_driver()
 
@@ -295,17 +300,55 @@ async def _(event: GroupMessageEvent, state: T_State, num: str = ArgPlainText("c
         await equip_item.finish("输入的格式不对，请输入数字")
     num = int(num)
     if num == 0:
-        await equip_item.finish("好的")
+        return
     if num < 0 or num > len(state["tmp"]):
         await equip_item.finish("输入的数字不在选定范围内")
-    await equip_item.finish(await handle_equip(event, state["tmp"][num-1]))
-
+    await equip_item.finish(await handle_equip(event, state["tmp"][num - 1]))
 
 
 @test.handle()
 async def _():
     # await test.finish(Message.template('{}').format())
     return
+
+
+@receive_mission.handle()
+async def _(event: GroupMessageEvent, state: T_State):
+    ms, msstr = await get_available_mission(event)
+    await receive_mission.send(msstr)
+    state["tmp"] = ms
+
+
+@receive_mission.got("choose", prompt="请输入要领取的任务")
+async def _(event: GroupMessageEvent, state: T_State, num: str = ArgPlainText("choose")):
+    if not num.isdigit():
+        await equip_item.finish("输入的格式不对，请输入数字")
+    num = int(num)
+    if num == 0:
+        return
+    if num < 0 or num > len(state["tmp"]):
+        await equip_item.finish("输入的数字不在选定范围内")
+    await receive_mission.send(await handle_receive_mission(event, state["tmp"][num - 1]))
+
+
+@submit_mission.handle()
+async def _(event: GroupMessageEvent, state: T_State):
+    ms, msstr = await get_submitable_mission(event)
+    await receive_mission.send(msstr)
+    state["tmp"] = ms
+
+
+@submit_mission.got("choose", prompt="请输入要提交的任务")
+async def _(event: GroupMessageEvent, state: T_State, num: str = ArgPlainText("choose")):
+    if not num.isdigit():
+        await equip_item.finish("输入的格式不对，请输入数字")
+    num = int(num)
+    if num == 0:
+        return
+    if num < 0 or num > len(state["tmp"]):
+        await equip_item.finish("输入的数字不在选定范围内")
+    await receive_mission.send(await handle_submit_mission(event, state["tmp"][num - 1]))
+
 
 # 挖矿 10小时 背包
 # 制作 主道具 被动道具
