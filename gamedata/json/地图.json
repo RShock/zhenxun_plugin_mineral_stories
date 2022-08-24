@@ -1,0 +1,254 @@
+{
+  "打工": {
+    "require_level": 1,
+    "owned": [
+      {
+        "name": "垃圾回收站",
+        "weight": 500
+      },
+      {
+        "name": "小餐馆",
+        "weight": 500
+      },
+      {
+        "name": "劈柴墩",
+        "weight": 500
+      },
+      {
+        "name": "养老院",
+        "weight": 200
+      }
+    ],
+    "public": true,
+    "description": "每个探险家在业余时间都要帮助镇子里的人"
+  },
+  "小餐馆": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "洗盘子，传菜。餐馆的菜表面总是灰扑扑的"
+  },
+  "垃圾回收站": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "处理村民们的垃圾"
+  },
+  "劈柴墩": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "努力劈柴！相比挖矿来说力气并不需要太大"
+  },
+  "养老院": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "劳动点数",
+        "num": 10,
+        "weight": 10
+      }
+    ],
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "作为一个新生的村子，养老院里没有几个人，不过可都是大人物的长辈"
+  },
+  "森林": {
+    "require_level": 1,
+    "owned": [],
+    "mineral_list": [
+      {
+        "name": "原木",
+        "weight": 1
+      }
+    ],
+    "public": true,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "和平的森林，有大量木材资源"
+  },
+  "新手矿洞": {
+    "require_level": 1,
+    "owned": [
+      {
+        "name": "新手矿洞(第一层)",
+        "weight": 1
+      }
+    ],
+    "public": true,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "已经被探明的矿洞，适合学徒前来练手"
+  },
+  "新手矿洞(第一层)": {
+    "require_level": 1,
+    "owned": [
+      {
+        "name": "新手矿洞(第一层)",
+        "weight": 500
+      },
+      {
+        "name": "新手矿洞(第二层)",
+        "weight": 300
+      }
+    ],
+    "mineral_list": [
+      {
+        "name": "辉锑锡铅矿",
+        "weight": 0.50
+      },
+      {
+        "name": "圆柱锡矿",
+        "weight": 0.49
+      },
+      {
+        "name": "未知碎片I",
+        "weight": 0.01
+      }
+    ],
+    "cost": {
+      "火把": 1
+    },
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "已经被探明的矿洞，适合学徒前来练手"
+  },
+  "新手矿洞(第二层)": {
+    "require_level": 2,
+    "owned": [
+      {
+        "name": "新手矿洞(第二层)",
+        "weight": 500
+      },
+      {
+        "name": "新手矿洞(第三层)",
+        "weight": 500
+      },
+      {
+        "name": "秘密地层α",
+        "weight": 1
+      }
+    ],
+    "mineral_list": [
+      {
+        "name": "黄锡矿",
+        "weight": 0.49
+      },
+      {
+        "name": "硫锡铅矿",
+        "weight": 0.49
+      },
+      {
+        "name": "未知碎片II",
+        "weight": 0.01
+      },
+      {
+        "name": "工作手套",
+        "weight": 0.01
+      }
+    ],
+    "cost": {
+      "火把": 1
+    },
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "矿洞的第二层，和第一层没什么区别"
+  },
+  "新手矿洞(第三层)": {
+    "require_level": 3,
+    "owned": [
+      {
+        "name": "新手矿洞(第四层)",
+        "weight": 1.0
+      }
+    ],
+    "mineral_list": [
+      {
+        "name": "锡石",
+        "weight": 0.5
+      },
+      {
+        "name": "黄锡矿",
+        "weight": 0.49
+      },
+      {
+        "name": "未知碎片III",
+        "weight": 0.01
+      }
+    ],
+    "cost": {
+      "火把": 1
+    },
+    "public": false,
+    "require_honor": {},
+    "require_buff": {},
+    "require_item": {},
+    "description": "矿洞的第三层，有很高的锡矿产量"
+  },
+  "新手矿洞(第四层)": {
+    "require_level": 999,
+    "public": false,
+    "description": "矿洞的第四层，这里分布着很多铜矿"
+  },
+  "秘密地层α": {
+    "require_level": 1,
+    "mineral_list": [
+      {
+        "name": "未知碎片I",
+        "weight": 1
+      },
+      {
+        "name": "未知碎片II",
+        "weight": 1
+      },
+      {
+        "name": "未知碎片III",
+        "weight": 1
+      }
+    ],
+    "public": false,
+    "cost": {
+      "火把": 1
+    },
+    "description": "听说只有迷路的人才能来到这里..."
+  }
+}

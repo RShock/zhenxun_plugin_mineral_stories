@@ -41,7 +41,8 @@ class Compose:
 class Mission:
     name = '未定义名称'
     type = '未定义类型'
-    repeatable: bool = False,
+    repeatable: bool = False
+    hide_reward: bool = False
     des = '未定义任务描述'
     tar = '未定义任务目标'
     check = {}
@@ -89,7 +90,7 @@ async def load_world_data() -> None:
     global world_data
     world_data = WorldInfo()
     logger.info(f'矿石物语资源载入中')
-    path = os.path.dirname(__file__) + '/gamedata'
+    path = os.path.dirname(__file__) + '/gamedata/json'
     files = os.listdir(path)
     for file in files:
         # try:
@@ -184,6 +185,7 @@ def parse_mission(mission_json):
         mission.reward = v.get("reward", {})
         mission.next = v.get("next")
         mission.check = v["check"]
+        mission.hide_reward = v.get("hide_reward")
         mission_dict[mission.name] = mission
 
     return mission_dict

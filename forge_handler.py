@@ -43,22 +43,26 @@ async def get_forge_num(event, forge: Compose) -> int:
     return mi
 
 
-async def handle_forge(event, forge: Compose, times:int) -> str:
+async def handle_forge(event, forge: Compose, times: int) -> str:
     player: PlayerDB = await get_player(event)
+    exp = 0
     for i in forge.consume:
         player.cost_item(i["name"], i["num"] * times)
-    tmp = '制作中...\n'
+        if i["name"] == '劳动点数':
+            exp += i["num"] *times
+    tmpstr = '制作中...\n'
     for i in forge.produce:
         num = i["num"]
         tmp = math.modf(num)
         total = 0
-        for j in range(0,times):
+        for j in range(0, times):
             # 如果制作一次得到1.4个 那么40%得到2个 60%得到1个
-            num = tmp[1]
+            num = int(tmp[1])
             if tmp[0] > random.random():
                 num += 1
-            total+=num
-            tmp+=f'制作出来了{num}个{i["name"]}\n'
+            total += num
+            tmpstr += f'{forge.type}了{num}个{i["name"]}\n'
         player.add_item(i["name"], total)
-    await player.update(bag=player.bag, forge_exp=player.forge_exp+(forge.consume.get('劳动点数') or 0)).apply()
-    return tmp
+    await player.update(bag=player.bag, collection=player.collection,
+                        forge_exp=player.forge_exp + exp).apply()
+    return tmpstr

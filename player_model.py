@@ -122,6 +122,10 @@ class PlayerDB(db.Model):
             logger.warning(f"使用{item_name}时发现物品不足")
             return False
 
+    def cost_items(self, items: dict[str, int]):
+        for i in items.items():
+            self.cost_item(i[0], i[1])
+
     def query_item(self, item_name):
         return self.bag.get(item_name) or 0
 
@@ -140,5 +144,3 @@ class PlayerDB(db.Model):
         # 这里的添加不会增加图鉴计数，所以不能直接调用playerDB.add_item
         add_item(self.bag, name, 1)
         self.equip.pop(_type)
-
-

@@ -1,3 +1,4 @@
+from extensive_plugin.mineral_stories.utils import get_act_str
 from services.db_context import db
 from datetime import datetime
 from services.log import logger
@@ -31,7 +32,7 @@ class ActionDB(db.Model):
         try:
             async with db.transaction():
                 logger.info(f"{uid}出发了")
-                return await cls.create(uid=uid, position=pos, action=f"正在{pos}", log=f"出发了！目标{pos}\n")
+                return await cls.create(uid=uid, position=pos, action=get_act_str(pos), log=f"出发了！前去{pos}\n")
         except Exception as e:
             logger.info(f"角色出发出错 {type(e)}: {e}")
 
